@@ -1,0 +1,61 @@
+timestep	   0.0005
+variable   	t equal 300
+units		metal
+atom_style	atomic
+
+read_data	data.si
+
+thermo		1000
+
+neighbor        2 bin
+neigh_modify    delay 10
+neighbor        2.0 nsq
+neigh_modify    delay 0 every 1 check yes
+
+pair_style	tersoff
+pair_coeff	* * SiCGe.tersoff Si(D) Si(D)
+
+dump		snap all atom 1000 snap.lammpstrj
+
+velocity        all create $t ${SEED}
+
+### EQUILIBRATE ###
+fix             NVT all nvt temp $t $t 0.05
+run             50000
+unfix           NVT
+
+fix             NPT all npt temp $t $t 0.05 x 0 0 0.5 y 0 0 0.5 z 0 0 0.5 couple none
+run             50000
+unfix		NPT
+
+fix             NVE all nve
+run             50000
+unfix           NVE
+##################
+
+### THERMALIZE ###
+fix             NVT all nvt temp $t $t 0.05
+run             50000
+unfix           NVT
+##################
+
+### COLLECT VELS ###
+fix		NVE all nve
+
+dump		vels all custom 40 vels.dat id type vx vy vz
+dump_modify	vels format line "%d %d %0.8g %0.8g %0.8g"
+dump_modify	vels sort id
+
+dump		pos all custom 10000 pos.dat id type x y z 
+dump_modify     pos format line "%d %d %0.8g %0.8g %0.8g"
+dump_modify     pos sort id
+
+run		500000	
+###################
+
+
+
+
+
+
+

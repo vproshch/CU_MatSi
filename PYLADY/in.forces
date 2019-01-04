@@ -1,0 +1,118 @@
+atom_style      atomic
+units           metal
+dimension       3
+boundary        p p p
+processors      * * *
+
+
+#----------------------- ATOM DEFINITION-----------------------------------
+
+#neighbor 	2 bin
+#neigh_modify 	delay 10
+#neighbor        2.0 nsq
+#neigh_modify 	delay 0 every 1 check yes
+
+atom_modify	map hash
+
+read_data	data.si
+variable 	filetowrite string Fij.dat
+
+pair_style 	tersoff
+pair_coeff 	* * SiCGe.tersoff Si(D) Si(D)
+
+timestep 	0.0005 
+
+
+#------------------Compute Forces on atoms--------------------------------------
+
+compute 	fxfyfz all property/atom fx fy fz
+
+compute 	fxs all property/atom fx
+compute 	fys all property/atom fy
+compute 	fzs all property/atom fz
+
+
+#-------------------------- run 0 ------------------------------------------------
+
+fix 		NVE all nve
+variable 	N equal "count(all)"
+
+
+#----------------------------Initialize ------------------------------------------
+
+variable 	du equal 0.025 # Amount of displacement
+variable 	du2 equal -2*v_du
+
+shell 		rm ${filetowrite}
+
+dump 		fij all custom 1 ${filetowrite} id c_fxs c_fys c_fzs
+dump_modify 	fij sort id
+dump_modify 	fij append yes
+
+
+#------------------- LOOP OVER ALL ATOMS ----------------------------------
+
+print 		"du ${du}" append ${filetowrite}
+thermo_modify 	flush yes
+
+variable 	counter equal 0
+
+
+label 		loop_i
+variable 	i loop $N
+	 
+	 group			thisi id $i
+         
+	 #---------------- X DIRECTION DISPLACEMENTS TO POSITIVE AND NEGATIVE DIRECTION-------------------
+
+         displace_atoms 	thisi move ${du} 0 0
+         variable 		counter equal ${counter}+1
+         reset_timestep 	${counter}
+         print 			"counter=${counter}"
+         run 			0 # Update the forces in the compute
+
+         displace_atoms 	thisi move ${du2} 0 0
+         variable 		counter equal ${counter}+1
+         reset_timestep 	${counter}
+         print 			"counter=${counter}"
+         run 			0 # Update the forces in the compute
+
+         displace_atoms 	thisi move ${du} 0 0
+
+         #---------------- Y DIRECTION DISPLACEMENTS TO POSITIVE AND NEGATIVE DIRECTION---------------------
+
+         displace_atoms 	thisi move 0 ${du} 0
+         variable 		counter equal ${counter}+1
+         reset_timestep 	${counter}
+         print 			"counter=${counter}"
+         run 			0 # Update the forces in the compute
+
+         displace_atoms 	thisi move 0 ${du2} 0
+         variable 		counter equal ${counter}+1
+         reset_timestep 	${counter}
+         print 			"counter=${counter}"
+         run 			0 # Update the forces in the compute
+
+         displace_atoms 	thisi move 0 ${du} 0
+
+         #--------------- Z DIRECTION DISPLACEMENTS TO POSITIVE AND NEGATIVE DIRECTION----------------------
+
+         displace_atoms 	thisi move 0 0 ${du}
+         variable 		counter equal ${counter}+1
+         reset_timestep 	${counter}
+         print 			"counter=${counter}"
+         run 			0 # Update the forces in the compute
+
+         displace_atoms 	thisi move 0 0 ${du2}
+         variable 		counter equal ${counter}+1
+         reset_timestep 	${counter}
+         print 			"counter=${counter}"
+         run 			0 # Update the forces in the compute
+
+         displace_atoms 	thisi move 0 0 ${du}
+
+next 		i
+jump 		SELF loop_i
+label 		final_break
+
+print 		"all done"
