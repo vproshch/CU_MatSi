@@ -16,18 +16,21 @@ i wrote all this in using python 2.7 installed with conda.
 import numpy as np #if it doesnt work, lemme know and ill tell you the versions
 import matplotlib.pyplot as plt
 import ty
+import sys
 
 ty.tic()
 
-outfile = 'sed.ty.GaN.v2.dat'
+outfile = 'sed.ty.GaN'
 velsfile = 'vels.dat'
 
-nx, ny, nz = [8,8,8]
-steps = 180000 #run time
+nx, ny, nz = [14,14,14] #size of simulation cell
+dk = 2 #k space mesh, number of points between speciak k points
+
+steps = 1000 #run time
 dt = 0.4e-15 #lammps time step
-dn = 40 #print frequency
+dn = 10 #print frequency
 prints = steps/dn #times data is printed
-split = 1 #times to split data for averaging
+split = 8 #times to split data for averaging
 tn = prints/split #timesteps per chunk
 win = 0.1 #gaussian smoothing window
 pi = np.pi #tired of forgetting the 'np' part...
@@ -62,7 +65,6 @@ specialk = np.array([[0, 0, 0], #G
                      [0, 0, 0.5]]) #Z 
                      #special reciprocal lattice points
 klabel = np.array(('G','X','S','Y','G','Z','U','R','T','Z')) 
-dk = 40 #k space mesh, number of points between speciak k points
 
 kpoints, kdist = ty.makeKpoints(prim,specialk,dk) #get the input k space arrays
 #from a funtion
@@ -84,7 +86,7 @@ with open(velsfile, 'r') as fid:
     #together. Saves RAM space \and it also 'ensemble averages' to 
     #produce better data      
           
-    for i in range(1):#split): #loop over chunks to block average
+    for i in range(split): #loop over chunks to block average
         print('\n\tNow on chunk: '+str(i+1)+
               ' out of '+str(split)+'\n')
         vels = np.zeros((tn,num,3))
@@ -123,11 +125,14 @@ with open(velsfile, 'r') as fid:
                     #KE of normal coordinate (square of time-FFT)
                     
         sed = sed+qdot/(4*np.pi*steps/split*dt*nc) #a buncha constants
-
+        ty.writeSED(outfile+'.'+str(i)+'.dat',thz,kpoints,sed) #track progress
+        ty.toc() #execution time
+        sys.stdout.flush() #force write to log file (for use of thunder)
+        
 sed = sed/split #average across splits
 
 ### WRITE TO A FILE ###
-ty.writeSED(outfile,thz,kpoints,sed)
+ty.writeSED(outfile+'.final.dat',thz,kpoints,sed)
 
 ty.toc()
 
