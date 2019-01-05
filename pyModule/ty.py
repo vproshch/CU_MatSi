@@ -547,4 +547,19 @@ def makeGaN(nx,ny,nz,lammps='no'):
                           str(pos[i,4])+'\n')
             fid.write(str(int(pos[-1,0]))+' '+str(int(pos[-1,1]))+' '
                       +str(pos[-1,2])+' '+str(pos[-1,3])+' '+str(pos[-1,4]))
-    return [num, pos, masses, uc, a, c]  
+    return [num, pos, masses, uc, a, c] 
+
+def tic():
+    #Homemade version of matlab tic and toc functions ##FOUND ONLINE
+    import time
+    global startTime_for_tictoc
+    startTime_for_tictoc = time.time()
+def toc():
+    import numpy as np
+    import time
+    if 'startTime_for_tictoc' in globals():
+        print("\n\tElapsed time is "+ 
+              str(np.round(time.time()-
+                           startTime_for_tictoc,decimals=3))+" seconds.")
+    else:
+        print("\n\tToc: start time not set") 

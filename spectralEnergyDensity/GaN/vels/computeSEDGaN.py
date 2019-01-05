@@ -17,6 +17,8 @@ import numpy as np #if it doesnt work, lemme know and ill tell you the versions
 import matplotlib.pyplot as plt
 import ty
 
+ty.tic()
+
 outfile = 'sed.ty.GaN.dat'
 velsfile = 'vels.dat'
 
@@ -126,8 +128,11 @@ sed = sed/split #average across splits
 ### WRITE TO A FILE ###
 ty.writeSED(outfile,thz,kpoints,sed)
 
+ty.toc()
+
 ### PLOT THE DISPERSION CURVE ###
 plt.imshow(np.real(sed),cmap='plasma',aspect='auto')
 plt.tight_layout()
 plt.show()
 ###
+
