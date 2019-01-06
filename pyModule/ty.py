@@ -3,7 +3,7 @@
 """
 This file is Ty's custom module to import functions into scritps
 
-DATE STAMP: 01.04.2019 MM.DD.YYYY
+DATE STAMP: 01.06.2019 MM.DD.YYYY
 """
 def gsmooth(Raw, win, dom):
     """
