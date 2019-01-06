@@ -16,21 +16,20 @@ i wrote all this in using python 2.7 installed with conda.
 import numpy as np #if it doesnt work, lemme know and ill tell you the versions
 import matplotlib.pyplot as plt
 import ty
-import sys
 
 ty.tic()
 
 outfile = 'sed.ty.GaN'
 velsfile = 'vels.dat'
 
-nx, ny, nz = [14,14,14] #size of simulation cell
+nx, ny, nz = [8,8,8] #size of simulation cell
 dk = 30 #k space mesh, number of points between speciak k points
 
-steps = 10000000 #run time
+steps = 10000 #run time
 dt = 0.4e-15 #lammps time step
-dn = 10 #print frequency
+dn = 50 #print frequency
 prints = steps/dn #times data is printed
-split = 10 #times to split data for averaging
+split = 2 #times to split data for averaging
 tn = prints/split #timesteps per chunk
 win = 0.1 #gaussian smoothing window
 pi = np.pi #tired of forgetting the 'np' part...
@@ -87,7 +86,7 @@ with open(velsfile, 'r') as fid:
     #produce better data      
           
     for i in range(split): #loop over chunks to block average
-        print('\n\tNow on chunk: '+str(i+1)+
+        ty.log('\n\tNow on chunk: '+str(i+1)+
               ' out of '+str(split)+'\n')
         vels = np.zeros((tn,num,3))
         qdot = np.zeros((tn,nk))
@@ -107,7 +106,7 @@ with open(velsfile, 'r') as fid:
         for j in range(nk): #loop over all k points
             kvec = kpoints[j,:] #k point vector
             if j%50 == 0:
-                print('\t\tNow on k-point: '+str(j)+' out of '+str(nk))
+                ty.log('\t\tNow on k-point: '+str(j)+' out of '+str(nk)+'\n')
             tmp = np.zeros((tn,1)).astype(complex) #sed for this k point
             for k in range(nc-1): #loop over unit cells
                 rvec = cellvec[k,2:5] #position of unit cell
@@ -127,17 +126,16 @@ with open(velsfile, 'r') as fid:
         sed = sed+qdot/(4*np.pi*steps/split*dt*nc) #a buncha constants
         ty.writeSED(outfile+'.'+str(i)+'.dat',thz,kpoints,sed) #track progress
         ty.toc() #execution time
-        sys.stdout.flush() #force write to log file (for use of thunder)
         
 sed = sed/split #average across splits
 
 ### WRITE TO A FILE ###
 ty.writeSED(outfile+'.final.dat',thz,kpoints,sed)
-print('\n\tAll done!')
+ty.log('\n\tAll done!')
 
 ### PLOT THE DISPERSION CURVE ###
-#plt.imshow(np.real(sed),cmap='nipy_spectral',aspect='auto')
-#plt.tight_layout()
-#plt.show()
+plt.imshow(np.real(sed),cmap='nipy_spectral',aspect='auto')
+plt.tight_layout()
+plt.show()
 ###
 

@@ -558,8 +558,20 @@ def toc():
     import numpy as np
     import time
     if 'startTime_for_tictoc' in globals():
-        print("\n\tElapsed time is "+ 
+        log("\n\tElapsed time is "+ 
               str(np.round(time.time()-
                            startTime_for_tictoc,decimals=3))+" seconds.")
     else:
-        print("\n\t\tToc: start time not set") 
+        log("\n\t\tToc: start time not set") 
+
+def log(string,outfile='log.txt',supress='no'):
+    """
+    This function prints output to a file called log.txt and to the screen. 
+    If you don't want to print to screen, enter supress='yes'
+    """
+    with open(outfile,'a') as fid:
+        fid.write(string)
+    if supress == 'no':
+        print(string)
+    
+        

@@ -1,5 +1,5 @@
 #----------- Global declaration ----
-variable        T       equal 500           # Kelvin
+variable        T       equal 10           # Kelvin
 variable        kB      equal 8.6173324e-5  # [eV/K] Boltzmann
 variable        A2m     equal 1.0e-10
 variable        ps2s    equal 1.0e-12
@@ -20,8 +20,8 @@ read_data	data.vels
 pair_style      tersoff				##Potential
 pair_coeff      * * GaN.tersoff Ga N Ga N Ga N Ga N
 neighbor	0.5 bin
-timestep        0.0002				##1 fs timestep
-thermo          2000
+timestep        0.0004				##1 fs timestep
+thermo          1000
 dump		snap all atom 1000 snap.lammpstrj 
 
 # ----------- Initialize velocities ----------------
@@ -29,17 +29,17 @@ velocity        all create ${T} ${SEED} mom yes rot yes dist gaussian
 
 # ----------- Equilibration and thermalization ----------------
 fix             NVT all nvt temp ${T} ${T} 0.05 tchain 10
-run        	200000
+run        	10000
 unfix           NVT
 write_restart   restart.*
 
 #----------Collect Velocities---------------
-variable	dt_dump equal 60
+variable	dt_dump equal 50
 dump            vels all custom ${dt_dump} vels.dat id type vx vy vz
 dump_modify     vels format line "%d %d %0.8g %0.8g %0.8g"
 dump_modify     vels sort id
 
-dump            pos all custom 1000 interface.pos.dat id type x y z
+dump            pos all custom 1000 pos.dat id type x y z
 dump_modify     pos format line "%d %d %0.8g %0.8g %0.8g"
 dump_modify     pos sort id
 
@@ -47,7 +47,7 @@ dump_modify     pos sort id
 restart         100000 restart
 fix             NVE all nve
 
-run             1000000
+run             10000
 write_restart	restart.final.*
 
 undump          snap
