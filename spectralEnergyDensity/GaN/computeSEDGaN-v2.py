@@ -139,7 +139,7 @@ ty.writeSED(outfile+'.smooth.dat',thz,kpoints,sedg)
 ty.log('\n\tAll done!')
 
 ### PLOT THE DISPERSION CURVE ###
-plt.imshow(np.real(sed),cmap='nipy_spectral',aspect='auto')
+plt.imshow(sedg,cmap='jet',aspect='auto')
 plt.tight_layout()
 plt.show()
 ###
