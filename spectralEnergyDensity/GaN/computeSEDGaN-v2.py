@@ -23,15 +23,15 @@ outfile = 'sed.ty.GaN'
 velsfile = 'vels.dat'
 
 nx, ny, nz = [8,8,8] #size of simulation cell
-dk = 30 #k space mesh, number of points between speciak k points
+dk = 40 #k space mesh, number of points between speciak k points
 
-steps = 10000 #run time
+steps = 1000000 #run time
 dt = 0.4e-15 #lammps time step
 dn = 50 #print frequency
 prints = steps/dn #times data is printed
-split = 2 #times to split data for averaging
+split = 4 #times to split data for averaging
 tn = prints/split #timesteps per chunk
-win = 0.1 #gaussian smoothing window
+win = 1 #gaussian smoothing window
 pi = np.pi #tired of forgetting the 'np' part...
 
 #om = np.arange(0,tn)*2*np.pi/(tn*dt*dn) #angular frequency
@@ -131,6 +131,11 @@ sed = sed/split #average across splits
 
 ### WRITE TO A FILE ###
 ty.writeSED(outfile+'.final.dat',thz,kpoints,sed)
+
+sedg = ty.smoothSED(np.real(sed),win,(thz[1]-thz[0])*np.pi*1e12)
+#gaussian smooth SED along freq axis for better looking results
+ty.writeSED(outfile+'.smooth.dat',thz,kpoints,sedg)
+
 ty.log('\n\tAll done!')
 
 ### PLOT THE DISPERSION CURVE ###

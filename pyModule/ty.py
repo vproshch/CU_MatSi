@@ -5,7 +5,6 @@ This file is Ty's custom module to import functions into scritps
 
 DATE STAMP: 01.04.2019 MM.DD.YYYY
 """
-
 def gsmooth(Raw, win, dom):
     """
     This function takes an numpy array defined over some domain and returns
@@ -29,10 +28,40 @@ def gsmooth(Raw, win, dom):
         n = (3*n) #set width of profile to 6*sigma i.e. end values ~= 0
         gauss = np.exp(-np.multiply(n,n)/2.0) #gaussian fx to convolve with
         gauss = gauss/np.sum(gauss) #normalized gaussian
-    
+
     smooth = np.convolve(Raw,gauss,mode='same')
     return smooth
 
+def smoothSED(Raw, win, dom):
+    """
+    Same as gsmooth but smooths 2d array along axis=0; designed for smoothing
+    SED.
+    This function takes an numpy array defined over some domain and returns
+    a gaussian smoothened version. "Raw" is the input numpy array. "win" is 
+    the width of the gaussian smoothing window used to initialize the 
+    smoothing window; e.g. if you have a signal from 0 to 20 THz and you want
+    to smooth with a window of 1/3 THz, set "win = 1/3.0". dom is the constant
+    spacing between values in the domain; e.g. if you have a numpy array,
+    "freq", ranging from 0 to 20 THz and with length 10000, "dom = freq[1] - 
+    freq[0]" = 0.002 THz. If none of this makes sense, do like I did and
+    figure it our yourself ;)
+    """
+    import numpy as np
+    gwin = round(win*1e12*2*np.pi/dom) #number of array elements in window
+    if gwin % 2 == 0: #make sure its odd sized array
+        gwin = gwin+1
+    if gwin == 1:
+        gauss = np.array([1]) #if array is size 1, convolve with self
+    else:
+        n = 2*np.arange(0,gwin)/(gwin-1)-(1) #centered at 0, sigma = 1
+        n = (3*n) #set width of profile to 6*sigma i.e. end values ~= 0
+        gauss = np.exp(-np.multiply(n,n)/2.0) #gaussian fx to convolve with
+        gauss = gauss/np.sum(gauss) #normalized gaussian
+    
+    smooth = np.zeros((len(Raw[:,0]),len(Raw[0,:])))
+    for i in range(len(Raw[0,:])):
+        smooth[:,i] = np.convolve(Raw[:,i],gauss,mode='same')
+    return smooth
 
 def findNN(pos,index=0):
     """
