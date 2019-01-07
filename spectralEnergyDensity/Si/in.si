@@ -1,5 +1,5 @@
 timestep	   0.0005
-variable   	t equal 300
+variable   	t equal 10
 units		metal
 atom_style	atomic
 
@@ -42,7 +42,7 @@ unfix           NVT
 ### COLLECT VELS ###
 fix		NVE all nve
 
-dump		vels all custom 40 vels.dat id type vx vy vz
+dump		vels all custom 20 vels.dat id type vx vy vz
 dump_modify	vels format line "%d %d %0.8g %0.8g %0.8g"
 dump_modify	vels sort id
 
@@ -50,7 +50,7 @@ dump		pos all custom 10000 pos.dat id type x y z
 dump_modify     pos format line "%d %d %0.8g %0.8g %0.8g"
 dump_modify     pos sort id
 
-run		500000	
+run		50000	
 ###################
 
 
